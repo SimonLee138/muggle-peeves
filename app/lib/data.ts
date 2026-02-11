@@ -6,10 +6,25 @@ import {
   InvoicesTable,
   LatestInvoiceRaw,
   Revenue,
+  MedicationScheduleEntry,
 } from './definitions';
 import { formatCurrency } from './utils';
 
-const sql = postgres(process.env.dashboard_POSTGRES_URL!, { ssl: 'require' });
+const sql = postgres(process.env.mug_pee_POSTGRES_URL!, { ssl: 'require' });
+
+export async function fetchMedicationSchedule() {
+  try {
+    const data = await sql<MedicationScheduleEntry[]>`
+    select ms.effective_date, taken, m.name as medicine_name, p.name as patient_name, p.img_src from medication_schedule ms
+    inner join medicine m on ms.medicine_id = m.id
+    inner join patient p on ms.patient_id = p.id;`;
+
+    return data;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch medication schedule data');
+  }
+}
 
 export async function fetchRevenue() {
   try {
@@ -88,7 +103,7 @@ export async function fetchCardData() {
 const ITEMS_PER_PAGE = 6;
 export async function fetchFilteredInvoices(
   query: string,
-  currentPage: number,
+  currentPage: number
 ) {
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 

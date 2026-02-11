@@ -2,18 +2,39 @@
 // It describes the shape of the data, and what data type each property should accept.
 // For simplicity of teaching, we're manually defining these types.
 // However, these types are generated automatically if you're using an ORM such as Prisma.
-export type User = {
-  id: string;
-  name: string;
-  email: string;
-  password: string;
+export type Medicine = {
+  id: number;
+  created_at: Date;
+  patient_id: number;
+  medicine_id: number;
+  effective_date: Date;
 };
 
-export type Customer = {
-  id: string;
+export type Patient = {
+  id: number;
   name: string;
-  email: string;
-  image_url: string;
+  img_src: string;
+  created_at: Date;
+};
+
+export type MedicationScheduleEntry = {
+  patient_name: string;
+  medicine_name: string;
+  effective_date: Date;
+  taken: boolean;
+  img_src: string;
+};
+
+export type DailyMedicationSchedule = {
+  effective_date_string: string;
+  pets: {
+    patient_name: string;
+    img_src: string;
+    medicines: {
+      medicine_name: string;
+      taken: boolean;
+    }[];
+  }[];
 };
 
 export type Invoice = {
