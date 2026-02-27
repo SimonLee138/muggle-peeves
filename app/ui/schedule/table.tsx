@@ -60,11 +60,11 @@ export default function ScheduleForm({ initialData }: ScheduleClientProps) {
     scheduleData.reduce(
       (acc: Record<string, DailyMedicationSchedule>, item) => {
         const pad = (n: number) => String(n).padStart(2, '0');
-        const dateKey = `${pad(item.effective_date.getUTCDate())}/${pad(item.effective_date.getUTCMonth() + 1)}`;
+        const dateKey = `${pad(item.start_date.getUTCDate())}/${pad(item.start_date.getUTCMonth() + 1)}`;
 
         if (!acc[dateKey]) {
           acc[dateKey] = {
-            effective_date_string: dateKey,
+            start_date_string: dateKey,
             pets: [],
           };
         }
@@ -84,7 +84,7 @@ export default function ScheduleForm({ initialData }: ScheduleClientProps) {
 
         petEntry.medicines.push({
           medicine_name: item.medicine_name,
-          taken: item.taken,
+          taken: item.taken_count,
         });
 
         return acc;
@@ -99,7 +99,7 @@ export default function ScheduleForm({ initialData }: ScheduleClientProps) {
       {/* responsive padding */}
       <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
         {dailyMedication.map((dayData, dayIndex) => (
-          <Grid size={12} key={`${dayData.effective_date_string}-${dayIndex}`}>
+          <Grid size={12} key={`${dayData.start_date_string}-${dayIndex}`}>
             <Item elevation={1} sx={{ p: { xs: 1.5, md: 2 } }}>
               <Grid container spacing={2} alignItems="stretch">
                 {/* Date – full width on mobile, narrow on larger screens */}
@@ -119,7 +119,7 @@ export default function ScheduleForm({ initialData }: ScheduleClientProps) {
                       width: '100%',
                     }}
                   >
-                    {dayData.effective_date_string}
+                    {dayData.start_date_string}
                   </Item>
                 </Grid>
 

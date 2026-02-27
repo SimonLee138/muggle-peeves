@@ -5,9 +5,8 @@
 export type Medicine = {
   id: number;
   created_at: Date;
-  patient_id: number;
-  medicine_id: number;
-  effective_date: Date;
+  name: string;
+  description: string;
 };
 
 export type Patient = {
@@ -20,13 +19,25 @@ export type Patient = {
 export type MedicationScheduleEntry = {
   patient_name: string;
   medicine_name: string;
-  effective_date: Date;
-  taken: boolean;
+  start_date: Date;
+  taken_count: boolean;
   img_src: string;
+  start_time: string;
+  end_time: string;
 };
 
+export type MedicationScheduleCreateForm = {
+  patient_name: string;
+  medicine_name: string;
+  taken_count: boolean;
+  dateFrom: string;
+  dateTo: string;
+  timeFrom: string;
+  timeTo: string;
+}
+
 export type DailyMedicationSchedule = {
-  effective_date_string: string;
+  start_date_string: string;
   pets: {
     patient_name: string;
     img_src: string;

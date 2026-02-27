@@ -7,6 +7,8 @@ import {
   LatestInvoiceRaw,
   Revenue,
   MedicationScheduleEntry,
+  Patient,
+  Medicine,
 } from './definitions';
 import { formatCurrency } from './utils';
 
@@ -15,14 +17,41 @@ const sql = postgres(process.env.mug_pee_POSTGRES_URL!, { ssl: 'require' });
 export async function fetchMedicationSchedule() {
   try {
     const data = await sql<MedicationScheduleEntry[]>`
-    select ms.effective_date, taken, m.name as medicine_name, p.name as patient_name, p.img_src from medication_schedule ms
-    inner join medicine m on ms.medicine_id = m.id
-    inner join patient p on ms.patient_id = p.id;`;
+      select ms.start_date, ms.end_date, taken_count, m.name as medicine_name, p.name as patient_name, p.img_src from medication_schedule ms
+      inner join medicine m on ms.medicine_id = m.id
+      inner join patient p on ms.patient_id = p.id;
+    `;
 
     return data;
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch medication schedule data');
+  }
+}
+
+export async function fetchPatient() {
+  try {
+    const data = await sql<Patient[]>`
+      SELECT * FROM patient
+    `;
+
+    return data;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch patient data');
+  }
+}
+
+export async function fetchMedicine() {
+  try {
+    const data = await sql<Medicine[]>`
+      SELECT * FROM medicine
+    `;
+
+    return data;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch medicine data');
   }
 }
 

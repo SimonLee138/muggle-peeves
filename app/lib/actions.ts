@@ -13,6 +13,19 @@ const FormSchema = z.object({
   status: z.enum(['pending', 'paid']),
   date: z.string(),
 });
+
+const MedicationScheduleFormSchema = z.object({
+  id: z.string(),
+  patient_id: z.number(),
+  medicine_id: z.number(),
+  start_date: z.date(),
+  end_date: z.date(),
+  start_time: z.date(),
+  end_time: z.date(),
+  taken_count: z.number(),
+});
+
+const CreateMedicationSchedule = MedicationScheduleFormSchema.omit({});
  
 const CreateInvoice = FormSchema.omit({ id: true, date: true });
 const UpdateInvoice = FormSchema.omit({ id: true, date: true });
