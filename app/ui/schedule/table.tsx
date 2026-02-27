@@ -163,7 +163,7 @@ export default function ScheduleForm({ initialData }: ScheduleClientProps) {
                         {/* Medicines – wrap on mobile, row on desktop */}
                         <Grid size={{ xs: 12, md: 9, lg: 9.5 }}>
                           <Stack
-                            direction={{ xs: 'column', sm: 'row' }}
+                            direction={{ xs: 'row', sm: 'row' }}
                             spacing={{ xs: 1, sm: 1.5 }}
                             useFlexGap
                             sx={{
