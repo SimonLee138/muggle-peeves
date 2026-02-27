@@ -84,7 +84,7 @@ export default function ScheduleForm({ initialData }: ScheduleClientProps) {
 
         petEntry.medicines.push({
           medicine_name: item.medicine_name,
-          taken: item.taken_count,
+          taken: item.times_daily,
         });
 
         return acc;
@@ -134,9 +134,9 @@ export default function ScheduleForm({ initialData }: ScheduleClientProps) {
                         borderRadius: 2,
                       }}
                     >
-                      <Grid container spacing={2} alignItems="center">
+                      <Grid container spacing={1} alignItems="center">
                         {/* Pet chip – full width mobile, fixed narrow on desktop */}
-                        <Grid size={{ xs: 12, md: 3, lg: 2.5 }}>
+                        <Grid size={{ xs: 4, md: 3, lg: 2.5 }}>
                           <Chip
                             avatar={
                               pet.img_src ? (
@@ -161,7 +161,7 @@ export default function ScheduleForm({ initialData }: ScheduleClientProps) {
                         </Grid>
 
                         {/* Medicines – wrap on mobile, row on desktop */}
-                        <Grid size={{ xs: 12, md: 9, lg: 9.5 }}>
+                        <Grid size={{ xs: 8, md: 9, lg: 9.5 }}>
                           <Stack
                             direction={{ xs: 'row', sm: 'row' }}
                             spacing={{ xs: 1, sm: 1.5 }}

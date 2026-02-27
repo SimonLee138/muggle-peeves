@@ -17,7 +17,7 @@ const sql = postgres(process.env.mug_pee_POSTGRES_URL!, { ssl: 'require' });
 export async function fetchMedicationSchedule() {
   try {
     const data = await sql<MedicationScheduleEntry[]>`
-      select ms.start_date, ms.end_date, taken_count, m.name as medicine_name, p.name as patient_name, p.img_src from medication_schedule ms
+      select ms.start_date, ms.end_date, times_daily, m.name as medicine_name, p.name as patient_name, p.img_src from medication_schedule ms
       inner join medicine m on ms.medicine_id = m.id
       inner join patient p on ms.patient_id = p.id;
     `;

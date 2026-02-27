@@ -24,7 +24,7 @@ export default function Form({ patients, medicines } : {patients: Patient[]; med
     };*/
     const [patient, setPatient] = React.useState<Number>(0);
     const [medicine, setMedicine] = React.useState<Number>(0);
-    const [takenCount, setTakenCount] = React.useState<Number>(0);
+    const [timesDaily, setTimesDaily] = React.useState<Number>(0);
 
     return (
         <form action={createMedicationSchedule}>
@@ -97,9 +97,9 @@ export default function Form({ patients, medicines } : {patients: Patient[]; med
                 </FormGrid>
                 <FormGrid size={{ xs: 12, md: 12}}>
                     <FormControl size="small" fullWidth required>
-                        <FormLabel>Taken Count</FormLabel>
+                        <FormLabel>Times Daily</FormLabel>
                         <Select 
-                            labelId="taken-count-select-label" id="taken-count-select" name="taken_count" label="Taken Count" value={takenCount} onChange={(e) => setTakenCount(e.target.value as number)}
+                            labelId="times-daily-select-label" id="times-daily-select" name="times_daily" label="Times Daily" value={timesDaily} onChange={(e) => setTimesDaily(e.target.value as number)}
                         >
                             {
                                 Array.from({ length: 10 }, (_, index) => (

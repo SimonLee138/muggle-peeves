@@ -20,7 +20,7 @@ export type MedicationScheduleEntry = {
   patient_name: string;
   medicine_name: string;
   start_date: Date;
-  taken_count: boolean;
+  times_daily: boolean;
   img_src: string;
   start_time: string;
   end_time: string;
@@ -29,7 +29,7 @@ export type MedicationScheduleEntry = {
 export type MedicationScheduleCreateForm = {
   patient_name: string;
   medicine_name: string;
-  taken_count: boolean;
+  times_daily: boolean;
   dateFrom: string;
   dateTo: string;
   timeFrom: string;

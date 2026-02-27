@@ -15,26 +15,26 @@ const FormSchema = z.object({
   end_date: z.string(),
   start_time: z.string(),
   end_time: z.string(),
-  taken_count: z.coerce.number(),
+  times_daily: z.coerce.number(),
 });
 
 const CreateMedicationSchedule = FormSchema.omit({ id: true });
 
 export async function createMedicationSchedule(formData: FormData) {
-  const { patient_id, medicine_id, start_date, end_date, start_time, end_time, taken_count } = CreateMedicationSchedule.parse({
+  const { patient_id, medicine_id, start_date, end_date, start_time, end_time, times_daily } = CreateMedicationSchedule.parse({
     patient_id: formData.get('patient'),
     medicine_id: formData.get('medicine'),
     start_date: formData.get('start_date'),
     end_date: formData.get('end_date'),
     start_time: formData.get('start_time'),
     end_time: formData.get('end_time'),
-    taken_count: formData.get('taken_count'),
+    times_daily: formData.get('times_daily'),
   });
 
   try {
     await sql`
-        INSERT INTO medication_schedule (created_at, patient_id, medicine_id, taken_count, start_time, end_time, start_date, end_date) 
-        VALUES (NOW(), ${patient_id}, ${medicine_id}, ${taken_count}, ${start_time}, ${end_time}, ${start_date}, ${end_date})
+        INSERT INTO medication_schedule (created_at, patient_id, medicine_id, times_daily, start_time, end_time, start_date, end_date) 
+        VALUES (NOW(), ${patient_id}, ${medicine_id}, ${times_daily}, ${start_time}, ${end_time}, ${start_date}, ${end_date})
     `;
   } catch (error) {
     console.log(error);
