@@ -1,5 +1,5 @@
 import { fetchMedicine, fetchPatient } from "@/app/lib/data";
-import Form from "@/app/ui/mediacation-schedule/create-form";
+import Form from "@/app/ui/medication-schedule/create-form";
 import Breadcrumbs from "@mui/material/Breadcrumbs";
 import Link from "next/link";
 

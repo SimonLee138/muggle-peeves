@@ -4,14 +4,17 @@ import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
-import Avatar from '@mui/material/Avatar';
 import Chip from '@mui/material/Chip';
 import {
   MedicationScheduleEntry,
   DailyMedicationSchedule,
+  MedicationRecordsEntry,
 } from '@/app/lib/definitions';
 import Stack from '@mui/material/Stack';
 import { CheckIcon } from '@heroicons/react/24/outline';
+import { use } from 'react';
+import { createMedicineRecords } from '@/app/lib/medication-schedule/actions';
+
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: '#fff',
@@ -25,81 +28,88 @@ const Item = styled(Paper)(({ theme }) => ({
   width: '100%',
 }));
 
-const icon = (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.5}
-    stroke="currentColor"
-    className="size-6"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="m4.5 12.75 6 6 9-13.5"
-    />
-  </svg>
-);
 interface ScheduleClientProps {
-  initialData: Awaited<MedicationScheduleEntry[]>;
+  initialData: Promise<MedicationScheduleEntry[]>;
+  medsTakenData: Promise<MedicationRecordsEntry[]>;
 }
 
-const handleClick = () => {
-  console.info('You clicked the Chip.');
+interface ScheduleClientProps {
+}
+
+const handleMedClick = async(medicine_id: number, patient_id: number) => {
+  const formData = new FormData();
+  formData.append('medicine_id', medicine_id.toString());
+  formData.append('patient_id', patient_id.toString());
+  await createMedicineRecords(formData);
 };
 
 const handleDelete = () => {
   console.info('You clicked the delete icon.');
 };
 
-export default function ScheduleForm({ initialData }: ScheduleClientProps) {
-  const scheduleData = initialData;
+export default function ScheduleForm({ initialData, medsTakenData }: ScheduleClientProps) {
+  const scheduleData = use(initialData);
+  const medsTaken = use(medsTakenData);
+  const ScheduleTree: Record<string, Record<string, MedicationScheduleEntry[]>> = {};
+  const medsTakenTree: Record<string, Record<string, Record<string, number>>> = {};
   console.log(scheduleData);
-  const dailyMedication: DailyMedicationSchedule[] = Object.values(
-    scheduleData.reduce(
-      (acc: Record<string, DailyMedicationSchedule>, item) => {
-        const pad = (n: number) => String(n).padStart(2, '0');
-        const dateKey = `${pad(item.start_date.getUTCDate())}/${pad(item.start_date.getUTCMonth() + 1)}`;
+console.log(medsTaken);
+  for (const row of medsTaken) {
+    const takenDate = (new Date(row.taken_date)).toISOString().split('T')[0];
 
-        if (!acc[dateKey]) {
-          acc[dateKey] = {
-            start_date_string: dateKey,
-            pets: [],
-          };
-        }
+    if (!medsTakenTree[takenDate]) {
+      medsTakenTree[takenDate] = {};
+    }
 
-        let petEntry = acc[dateKey].pets.find(
-          (p) => p.patient_name === item.patient_name
-        );
+    if (!medsTakenTree[takenDate][row.patient_name]) {
+      medsTakenTree[takenDate][row.patient_name] = {};
+    }
 
-        if (!petEntry) {
-          petEntry = {
-            patient_name: item.patient_name,
-            img_src: item.img_src,
-            medicines: [],
-          };
-          acc[dateKey].pets.push(petEntry);
-        }
+    if (!medsTakenTree[takenDate][row.patient_name][row.medicine_name]) {
+      medsTakenTree[takenDate][row.patient_name][row.medicine_name] = 0;
+    }
+    medsTakenTree[takenDate][row.patient_name][row.medicine_name]++;
+  }
+  console.log(medsTakenTree);
 
-        petEntry.medicines.push({
-          medicine_name: item.medicine_name,
-          taken: item.times_daily,
-        });
+  for (const row of scheduleData) {
+    const start = new Date(row.start_date);
+    const end = new Date(row.end_date);
 
-        return acc;
-      },
-      {} as Record<string, DailyMedicationSchedule>
-    )
-  );
-  console.log(dailyMedication);
+    let current = new Date(start);
+    let r = row;
+
+    while (current <= end) {
+      const dayKey = current.toISOString().split('T')[0];
+
+      if (!ScheduleTree[dayKey]) {
+        ScheduleTree[dayKey] = {};
+      }
+
+      if (!ScheduleTree[dayKey][row.patient_name]) {
+        ScheduleTree[dayKey][row.patient_name] = [];
+      }
+
+      if (medsTakenTree[dayKey] && medsTakenTree[dayKey][row.patient_name] && medsTakenTree[dayKey][row.patient_name][row.medicine_name]) {
+        r.doses_taken = medsTakenTree[dayKey][row.patient_name][row.medicine_name] ?? 0;
+      } else {
+        r.doses_taken = 0;
+      }
+      ScheduleTree[dayKey][row.patient_name].push(r);
+      
+      current.setDate(current.getDate() + 1);
+    }
+  }
+  console.log(ScheduleTree);
+  const sortedSchedule = Object.keys(ScheduleTree).sort();
+
   return (
     <Box sx={{ flexGrow: 1, p: { xs: 1, md: 3 } }}>
       {' '}
       {/* responsive padding */}
       <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
-        {dailyMedication.map((dayData, dayIndex) => (
-          <Grid size={12} key={`${dayData.start_date_string}-${dayIndex}`}>
+        {sortedSchedule.map((dayData, dayIndex) => (
+          <Grid size={12} key={`${dayData}`}>
             <Item elevation={1} sx={{ p: { xs: 1.5, md: 2 } }}>
               <Grid container spacing={2} alignItems="stretch">
                 {/* Date – full width on mobile, narrow on larger screens */}
@@ -119,15 +129,15 @@ export default function ScheduleForm({ initialData }: ScheduleClientProps) {
                       width: '100%',
                     }}
                   >
-                    {dayData.start_date_string}
+                    {dayData}
                   </Item>
                 </Grid>
 
                 {/* Main content area */}
                 <Grid size={{ xs: 12, sm: 10, md: 10.5, lg: 11 }}>
-                  {dayData.pets.map((pet, petIndex) => (
+                  {Object.entries(ScheduleTree[dayData]).map(([pet, meds], petIndex) => (
                     <Item
-                      key={`${pet.patient_name}-${petIndex}`}
+                      key={`${pet}`}
                       sx={{
                         mb: { xs: 2, md: 2.5 },
                         p: { xs: 1.5, md: 2 },
@@ -138,15 +148,7 @@ export default function ScheduleForm({ initialData }: ScheduleClientProps) {
                         {/* Pet chip – full width mobile, fixed narrow on desktop */}
                         <Grid size={{ xs: 4, md: 3, lg: 2.5 }}>
                           <Chip
-                            avatar={
-                              pet.img_src ? (
-                                <Avatar
-                                  alt={pet.patient_name}
-                                  src={pet.img_src}
-                                />
-                              ) : undefined
-                            }
-                            label={pet.patient_name}
+                            label={`${pet}`}
                             variant="outlined"
                             sx={{
                               flexGrow: 0,
@@ -170,20 +172,25 @@ export default function ScheduleForm({ initialData }: ScheduleClientProps) {
                               flexWrap: 'wrap',
                             }}
                           >
-                            {pet.medicines.map((medicine, medIndex) => (
+                            {meds.map((medicine, medIndex) => (
                               <Chip
                                 key={`${medicine.medicine_name}-${medIndex}`}
                                 label={medicine.medicine_name}
-                                onClick={handleClick}
+                                disabled={medicine.times_daily <= medicine.doses_taken}
+                                onClick={() => handleMedClick(medicine.medicine_id, medicine.patient_id)}
                                 onDelete={handleDelete}
-                                deleteIcon={
+                                deleteIcon={ medicine.times_daily <= medicine.doses_taken ? (
                                   <CheckIcon
                                     style={{
                                       width: 18,
                                       height: 18,
-                                      color: medicine.taken ? 'green' : 'gray', // optional: conditional color
+                                      color: 'green',
                                     }}
-                                  />
+                                  />) : (
+                                      <span style={{ fontSize: 14, fontWeight: 'bold', color: '#b15e05', marginRight: '10px' }}>
+                                      {medicine.doses_taken}
+                                      </span>
+                                    )
                                 }
                                 sx={{
                                   flexGrow: 0,

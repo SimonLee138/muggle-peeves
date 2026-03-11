@@ -1,3 +1,6 @@
+'use client';
+import { Box, Grid, Paper, styled } from "@mui/material";
+
 // Loading animation
 const shimmer =
   'before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_2s_infinite] before:bg-gradient-to-r before:from-transparent before:via-white/60 before:to-transparent';
@@ -214,5 +217,65 @@ export function InvoicesTableSkeleton() {
         </div>
       </div>
     </div>
+  );
+}
+
+export function MedicationScheduleSkeleton() {
+  const Item = styled(Paper)(({ theme }) => ({
+    backgroundColor: '#fff',
+    ...theme.typography.body2,
+    padding: theme.spacing(1),
+    textAlign: 'center',
+    color: (theme.vars ?? theme).palette.text.secondary,
+    ...theme.applyStyles('dark', {
+      backgroundColor: '#1A2027',
+    }),
+    width: '100%',
+  }));
+
+  return (
+    <Box sx={{ flexGrow: 1, p: { xs: 1, md: 3 } }}>
+      {' '}
+      <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
+        {Array.from({length: 6}).map((_, index) => (
+          <Grid size={12} key={`grid-1-${index}`}>
+            <Item elevation={1} sx={{ p: { xs: 1.5, md: 2 } }}>
+              <Grid container spacing={2} alignItems="stretch">
+                <Grid
+                  size={{ xs: 12, sm: 2, md: 1.5, lg: 1 }}
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    fontWeight: 'bold',
+                  }}
+                >
+                  <Item
+                    sx={{
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      width: '100%',
+                    }}
+                  >
+                  </Item>
+                </Grid>
+
+                {/* Main content area */}
+                <Grid size={{ xs: 12, sm: 10, md: 10.5, lg: 11 }}>
+                  <Item
+                      sx={{
+                        mb: { xs: 2, md: 2.5 },
+                        p: { xs: 1.5, md: 2 },
+                        borderRadius: 2,
+                      }}
+                    >
+                    </Item>
+                </Grid>
+              </Grid>
+            </Item>
+          </Grid>
+        ))}
+      </Grid>
+    </Box>
   );
 }

@@ -22,9 +22,9 @@ export default function Form({ patients, medicines } : {patients: Patient[]; med
     const handleNameChange = (event: SelectChangeEvent) => {
         setName(event.target.value as string);
     };*/
-    const [patient, setPatient] = React.useState<Number>(0);
-    const [medicine, setMedicine] = React.useState<Number>(0);
-    const [timesDaily, setTimesDaily] = React.useState<Number>(0);
+    const [patient, setPatient] = React.useState<Number>(1);
+    const [medicine, setMedicine] = React.useState<Number>(1);
+    const [timesDaily, setTimesDaily] = React.useState<Number>(1);
 
     return (
         <form action={createMedicationSchedule}>
@@ -46,13 +46,13 @@ export default function Form({ patients, medicines } : {patients: Patient[]; med
                 <FormGrid size={{ xs: 12, md: 6}}>
                     <FormControl>
                         <FormLabel>Date from</FormLabel>
-                        <TextField id="start_date" name="start_date" type="date"/>
+                        <TextField id="start_date" name="start_date" type="date" defaultValue={(new Date().toISOString().split('T')[0])}/>
                     </FormControl>
                 </FormGrid>
                 <FormGrid size={{ xs: 12, md: 6}}>
                     <FormControl>
                         <FormLabel>Date to</FormLabel>
-                        <TextField id="end_date" name="end_date" type="date"/>
+                        <TextField id="end_date" name="end_date" type="date" defaultValue={(new Date().toISOString().split('T')[0])}/>
                     </FormControl>
                 </FormGrid>
                 <FormGrid size={{ xs: 12, md: 6}}>

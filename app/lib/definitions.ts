@@ -16,12 +16,22 @@ export type Patient = {
   created_at: Date;
 };
 
-export type MedicationScheduleEntry = {
+export type MedicationRecordsEntry = {
+  id: number;
   patient_name: string;
   medicine_name: string;
-  start_date: Date;
-  times_daily: boolean;
-  img_src: string;
+  taken_date: string;
+}
+
+export type MedicationScheduleEntry = {
+  patient_id: number;
+  patient_name: string;
+  medicine_id: number; 
+  medicine_name: string;
+  start_date: string;
+  end_date: string;
+  times_daily: number;
+  doses_taken: number;
   start_time: string;
   end_time: string;
 };

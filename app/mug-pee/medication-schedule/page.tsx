@@ -1,10 +1,13 @@
 import { lusitana } from '@/app/ui/fonts';
-import ScheduleForm from '@/app/ui/mediacation-schedule/table';
-import { fetchMedicationSchedule } from '@/app/lib/data';
-import { CreateSchedule } from '@/app/ui/mediacation-schedule/buttons';
+import ScheduleForm from '@/app/ui/medication-schedule/table';
+import { fetchMedicationRecords, fetchMedicationSchedule } from '@/app/lib/data';
+import { CreateSchedule } from '@/app/ui/medication-schedule/buttons';
+import { Suspense } from 'react';
+import { MedicationScheduleSkeleton } from '@/app/ui/skeletons';
 
 export default async function Page() {
-  const scheduleData = await fetchMedicationSchedule();
+  const scheduleData = fetchMedicationSchedule();
+  const medsTakenData = fetchMedicationRecords();
 
   return (
     <div className="w-full">
@@ -14,7 +17,9 @@ export default async function Page() {
         </h1>
         <CreateSchedule />
       </div>
-      <ScheduleForm initialData={scheduleData}></ScheduleForm>
+      <Suspense fallback={<MedicationScheduleSkeleton/>}>
+        <ScheduleForm initialData={scheduleData} medsTakenData={medsTakenData}></ScheduleForm>
+      </Suspense>
     </div>
   );
 }

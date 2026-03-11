@@ -1,7 +1,7 @@
 import { lusitana } from '@/app/ui/fonts';
-import ScheduleForm from '@/app/ui/mediacation-schedule/table';
+import ScheduleForm from '@/app/ui/medication-schedule/table';
 import { fetchMedicationSchedule } from '@/app/lib/data';
-import { CreateSchedule } from '@/app/ui/mediacation-schedule/buttons';
+import { CreateSchedule } from '@/app/ui/medication-schedule/buttons';
 
 export default async function Page() {
   const scheduleData = await fetchMedicationSchedule();

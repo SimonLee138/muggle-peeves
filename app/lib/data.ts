@@ -9,6 +9,7 @@ import {
   MedicationScheduleEntry,
   Patient,
   Medicine,
+  MedicationRecordsEntry,
 } from './definitions';
 import { formatCurrency } from './utils';
 
@@ -17,15 +18,31 @@ const sql = postgres(process.env.mug_pee_POSTGRES_URL!, { ssl: 'require' });
 export async function fetchMedicationSchedule() {
   try {
     const data = await sql<MedicationScheduleEntry[]>`
-      select ms.start_date, ms.end_date, times_daily, m.name as medicine_name, p.name as patient_name, p.img_src from medication_schedule ms
+      select ms.start_date, ms.end_date, times_daily, m.id as medicine_id, m.name as medicine_name, p.id as patient_id, p.name as patient_name, p.img_src from medication_schedule ms
       inner join medicine m on ms.medicine_id = m.id
-      inner join patient p on ms.patient_id = p.id;
+      inner join patient p on ms.patient_id = p.id
+      where ms.end_date >= CURRENT_DATE - INTERVAL '14 days' AND ms.start_date <= CURRENT_DATE + INTERVAL '14 days'
+      ORDER BY ms.start_date, ms.patient_id, ms.medicine_id;
     `;
 
     return data;
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch medication schedule data');
+  }
+}
+
+export async function fetchMedicationRecords() {
+  try {
+    const data = await sql<MedicationRecordsEntry[]>`
+      SELECT p.name AS patient_name, m.name AS medicine_name, mr.taken_date from medication_records mr 
+      JOIN patient p ON p.id = mr.patient_id
+      JOIN medicine m ON m.id = mr.medicine_id
+    `;
+
+    return data;
+  } catch (error) {
+    throw new Error('Failed to fetch medication records data');
   }
 }
 

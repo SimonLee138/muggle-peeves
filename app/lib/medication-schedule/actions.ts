@@ -18,9 +18,17 @@ const FormSchema = z.object({
   times_daily: z.coerce.number(),
 });
 
-const CreateMedicationSchedule = FormSchema.omit({ id: true });
+const MedicineRecordFormSchema = z.object({
+  id: z.string(),
+  patient_id: z.coerce.number(),
+  medicine_id: z.coerce.number(),
+  taken_date: z.string(),
+});
 
-export async function createMedicationSchedule(formData: FormData) {
+const CreateMedicationSchedule = FormSchema.omit({ id: true });
+const CreateMedicineRecords = MedicineRecordFormSchema.omit({ id: true, taken_date: true });
+
+export async function createMedicationSchedule(formData: FormData): Promise<void> {
   const { patient_id, medicine_id, start_date, end_date, start_time, end_time, times_daily } = CreateMedicationSchedule.parse({
     patient_id: formData.get('patient'),
     medicine_id: formData.get('medicine'),
@@ -38,12 +46,28 @@ export async function createMedicationSchedule(formData: FormData) {
     `;
   } catch (error) {
     console.log(error);
-    return {
-        message: 'Database Error: Failed to Create Medication Schedule.',
-    };
   }
 
-  revalidatePath('/dashboard/medication-schedule');
-  redirect('/dashboard/medication-schedule');
+  revalidatePath('/mug-pee/medication-schedule');
+  redirect('/mug-pee/medication-schedule');
 
+}
+
+export async function createMedicineRecords(formData: FormData) {
+    const { patient_id, medicine_id } = CreateMedicineRecords.parse({
+        patient_id: formData.get('patient_id'),
+        medicine_id: formData.get('medicine_id'),
+    });
+
+    try {
+        await sql `
+            INSERT INTO medication_records (patient_id, medicine_id, taken_date)
+            VALUES (${patient_id}, ${medicine_id}, NOW())
+        `
+    } catch (error) {
+        console.log(error);
+    }
+
+    revalidatePath('/mug-pee/medication-schedule');
+    redirect('/mug-pee/medication-schedule');
 }
