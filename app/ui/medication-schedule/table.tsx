@@ -12,8 +12,9 @@ import {
 } from '@/app/lib/definitions';
 import Stack from '@mui/material/Stack';
 import { CheckIcon } from '@heroicons/react/24/outline';
-import { use } from 'react';
+import { use, useEffect, useRef, useTransition } from 'react';
 import { createMedicineRecords } from '@/app/lib/medication-schedule/actions';
+import { Backdrop, CircularProgress, Typography } from '@mui/material';
 
 
 const Item = styled(Paper)(({ theme }) => ({
@@ -36,24 +37,35 @@ interface ScheduleClientProps {
 interface ScheduleClientProps {
 }
 
-const handleMedClick = async(medicine_id: number, patient_id: number) => {
-  const formData = new FormData();
-  formData.append('medicine_id', medicine_id.toString());
-  formData.append('patient_id', patient_id.toString());
-  await createMedicineRecords(formData);
-};
 
-const handleDelete = () => {
-  console.info('You clicked the delete icon.');
-};
 
 export default function ScheduleForm({ initialData, medsTakenData }: ScheduleClientProps) {
+  const [isPending, startTransition] = useTransition();
+  const gridRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const scheduleData = use(initialData);
   const medsTaken = use(medsTakenData);
   const ScheduleTree: Record<string, Record<string, MedicationScheduleEntry[]>> = {};
   const medsTakenTree: Record<string, Record<string, Record<string, number>>> = {};
-  console.log(scheduleData);
-console.log(medsTaken);
+
+  const handleMedClick = async(medicine_id: number, patient_id: number) => {
+  if (isPending) return;
+
+  startTransition(async () => {
+    const formData = new FormData();
+    formData.append('medicine_id', medicine_id.toString());
+    formData.append('patient_id', patient_id.toString());
+
+    try {
+      await createMedicineRecords(formData);
+    } catch (error) {
+      console.log(error);
+    }
+  });};
+
+  const handleDelete = () => {
+    console.info('You clicked the delete icon.');
+  };
+
   for (const row of medsTaken) {
     const takenDate = (new Date(row.taken_date)).toISOString().split('T')[0];
 
@@ -103,13 +115,61 @@ console.log(medsTaken);
   console.log(ScheduleTree);
   const sortedSchedule = Object.keys(ScheduleTree).sort();
 
+  const currentDate = new Date().toISOString().split('T')[0];
+  useEffect(() => {
+    const todayGrid = gridRefs.current.get(currentDate);
+
+    if (todayGrid) {
+      const timer = setTimeout(() => {
+        todayGrid.focus();
+        todayGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+  }, [!!sortedSchedule]);
+
   return (
     <Box sx={{ flexGrow: 1, p: { xs: 1, md: 3 } }}>
       {' '}
+      <Backdrop
+        open={isPending}
+        sx={{
+          color: '#fff',
+          zIndex: (theme) => theme.zIndex.drawer + 2, // above most things
+          backgroundColor: 'rgba(0, 0, 0, 0.6)',       // semi-transparent dark
+          // Optional: add blur for modern feel (Chrome/Edge/Safari)
+          backdropFilter: 'blur(4px)',
+        }}
+      >
+        <Box sx={{ textAlign: 'center' }}>
+          <CircularProgress color="inherit" size={60} thickness={4} />
+          <Typography variant="h6" sx={{ mt: 2, color: 'white' }}>
+            Recording dose...
+          </Typography>
+        </Box>
+      </Backdrop>
+      
       {/* responsive padding */}
       <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
         {sortedSchedule.map((dayData, dayIndex) => (
-          <Grid size={12} key={`${dayData}`}>
+          <Grid size={12} key={`${dayData}`} ref={(el) => {
+              if (el) {
+                gridRefs.current.set(dayData, el);
+              } else {
+                gridRefs.current.delete(dayData);
+              }
+            }}
+            tabIndex={-1}
+            sx={{
+              outline: 'none',
+              '&:focus': {
+                outline: '2px solid #1976d2',
+                outlineOffset: '2px',
+                borderRadius: '4px',
+              },
+            }}
+          >
             <Item elevation={1} sx={{ p: { xs: 1.5, md: 2 } }}>
               <Grid container spacing={2} alignItems="stretch">
                 {/* Date – full width on mobile, narrow on larger screens */}
@@ -176,7 +236,7 @@ console.log(medsTaken);
                               <Chip
                                 key={`${medicine.medicine_name}-${medIndex}`}
                                 label={medicine.medicine_name}
-                                disabled={medicine.times_daily <= medicine.doses_taken}
+                                disabled={medicine.times_daily <= medicine.doses_taken || currentDate != dayData}
                                 onClick={() => handleMedClick(medicine.medicine_id, medicine.patient_id)}
                                 onDelete={handleDelete}
                                 deleteIcon={ medicine.times_daily <= medicine.doses_taken ? (
