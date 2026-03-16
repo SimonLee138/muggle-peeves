@@ -34,11 +34,6 @@ interface ScheduleClientProps {
   medsTakenData: Promise<MedicationRecordsEntry[]>;
 }
 
-interface ScheduleClientProps {
-}
-
-
-
 export default function ScheduleForm({ initialData, medsTakenData }: ScheduleClientProps) {
   const [isPending, startTransition] = useTransition();
   const gridRefs = useRef<Map<string, HTMLDivElement>>(new Map());
@@ -48,19 +43,20 @@ export default function ScheduleForm({ initialData, medsTakenData }: ScheduleCli
   const medsTakenTree: Record<string, Record<string, Record<string, number>>> = {};
 
   const handleMedClick = async(medicine_id: number, patient_id: number) => {
-  if (isPending) return;
+    if (isPending) return;
 
-  startTransition(async () => {
-    const formData = new FormData();
-    formData.append('medicine_id', medicine_id.toString());
-    formData.append('patient_id', patient_id.toString());
+    startTransition(async () => {
+      const formData = new FormData();
+      formData.append('medicine_id', medicine_id.toString());
+      formData.append('patient_id', patient_id.toString());
 
-    try {
-      await createMedicineRecords(formData);
-    } catch (error) {
-      console.log(error);
-    }
-  });};
+      try {
+        await createMedicineRecords(formData);
+      } catch (error) {
+        console.log(error);
+      }
+    });
+  };
 
   const handleDelete = () => {
     console.info('You clicked the delete icon.');
@@ -89,7 +85,6 @@ export default function ScheduleForm({ initialData, medsTakenData }: ScheduleCli
     const end = new Date(row.end_date);
 
     let current = new Date(start);
-    let r = row;
 
     while (current <= end) {
       const dayKey = current.toISOString().split('T')[0];
@@ -102,12 +97,13 @@ export default function ScheduleForm({ initialData, medsTakenData }: ScheduleCli
         ScheduleTree[dayKey][row.patient_name] = [];
       }
 
+      const dayEntry = { ...row };
       if (medsTakenTree[dayKey] && medsTakenTree[dayKey][row.patient_name] && medsTakenTree[dayKey][row.patient_name][row.medicine_name]) {
-        r.doses_taken = medsTakenTree[dayKey][row.patient_name][row.medicine_name] ?? 0;
+        dayEntry.doses_taken = medsTakenTree[dayKey][row.patient_name][row.medicine_name] ?? 0;
       } else {
-        r.doses_taken = 0;
+        dayEntry.doses_taken = 0;
       }
-      ScheduleTree[dayKey][row.patient_name].push(r);
+      ScheduleTree[dayKey][row.patient_name].push(dayEntry);
       
       current.setDate(current.getDate() + 1);
     }

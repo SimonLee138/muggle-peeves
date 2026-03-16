@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import postgres from 'postgres';
  
-const sql = postgres(process.env.mug_pee_POSTGRES_URL!, { ssl: 'require' });
+const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
 const FormSchema = z.object({
   id: z.string(),
@@ -25,8 +25,16 @@ const MedicineRecordFormSchema = z.object({
   taken_date: z.string(),
 });
 
+const MedicineFormSchema = z.object({
+    id: z.number(),
+    name: z.string(),
+    description: z.string(),
+    doses: z.coerce.number()
+});
+
 const CreateMedicationSchedule = FormSchema.omit({ id: true });
 const CreateMedicineRecords = MedicineRecordFormSchema.omit({ id: true, taken_date: true });
+const CreateMedicine = MedicineFormSchema.omit({id: true});
 
 export async function createMedicationSchedule(formData: FormData): Promise<void> {
   const { patient_id, medicine_id, start_date, end_date, start_time, end_time, times_daily } = CreateMedicationSchedule.parse({
@@ -70,4 +78,23 @@ export async function createMedicineRecords(formData: FormData) {
 
     revalidatePath('/mug-pee/medication-schedule');
     redirect('/mug-pee/medication-schedule');
+}
+
+export async function createMedicine(formData: FormData) {
+    const { name, description, doses } = CreateMedicine.parse({
+        name: formData.get('name'),
+        description: formData.get('description'),
+        doses: formData.get('doses'),
+    });
+    
+    try {
+        await sql`
+            INSERT INTO medicine (name, description, doses, created_at) VALUES (${name}, ${description}, ${doses}, NOW())
+        `;
+    } catch (error) {
+        console.log(error);
+    }
+
+    revalidatePath('/mug-pee/medicines');
+    redirect('/mug-pee/medicines');
 }
