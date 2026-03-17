@@ -41,7 +41,7 @@ export default function MedicineTable({ medicineData }: MedicineProps) {
                                 <TableCell align="right">{r.doses ?? '-'}</TableCell>
                                 <TableCell align="right">{r.description ?? '-'}</TableCell>
                                 <TableCell align="right">{formatDateTime(r.created_at)}</TableCell>
-                            </TableRow>
+                            </TableRow> 
                         ))
                     }
                 </TableBody>
